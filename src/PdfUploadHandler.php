@@ -1,6 +1,6 @@
 <?php
 
-namespace PEngstorm\PdfPrintLib;
+namespace PEngstrom\PdfPrintLib;
 
 require '../vendor/autoload.php';
 
