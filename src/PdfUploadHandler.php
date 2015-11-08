@@ -2,8 +2,6 @@
 
 namespace PEngstrom\PdfPrintLib;
 
-require '../vendor/autoload.php';
-
 use Sirius\Validation\ValueValidation;
 use Sirius\Upload\Handler;
 
@@ -24,7 +22,7 @@ class PdfUploadHandler extends Handler
                                 $options = array(),
                                 ValueValidator $validator = null) {
 
-        Parent::Constructor($directoryOrContainer,
+        parent::__construct($directoryOrContainer,
                             $options,
                             $validator);
 
