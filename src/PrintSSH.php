@@ -45,9 +45,9 @@ class PrintSSH
                                 $username,
                                 $keyfile) {
         
-        $ssh = Net_SSH2($server);
-        $sftp = Net_SFTP($server);
-        $key = Crypt_RSA();
+        $ssh = new Net_SSH2($server);
+        $sftp = new Net_SFTP($server);
+        $key = new Crypt_RSA();
 
         $key->loadKey(file_get_contents($keyfile));
 
