@@ -1,6 +1,7 @@
 {
     "name": "pengstrom/pdfprint-lib",
     "description": "Upload and print PDF files securely over ssh",
+    "homepage": "https://github.com/pengstrom/pdfprint-lib",
     "license": "GPL",
     "keywords": ["pdf", "ssh", "print"],
     "type": "library",
@@ -19,7 +20,7 @@
     },
     "autoload": {
         "psr-4": {
-            "PEngstrom\\PdfPrintLib\\": "src"
+            "PEngstrom\\PdfPrintLib\\": "src/"
         }
     }
 }
