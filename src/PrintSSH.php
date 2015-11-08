@@ -2,9 +2,9 @@
 
 namespace PEngstrom\PdfPrintLib;
 
-use phpseclib\Net\Net_SSH2;
-use phpseclib\Net\SFTP\Net_SFTP;
-use phpseclib\Crypt\Crypt_RSA;
+use phpseclib\Net\SSH2;
+use phpseclib\Net\SFTP;
+use phpseclib\Crypt\RSA;
 /**
  * PrintSSH
  *
@@ -44,9 +44,9 @@ class PrintSSH
                                 $username,
                                 $keyfile) {
         
-        $ssh = new Net_SSH2($server);
-        $sftp = new Net_SFTP($server);
-        $key = new Crypt_RSA();
+        $ssh = new SSH2($server);
+        $sftp = new SFTP($server);
+        $key = new RSA();
 
         $key->loadKey(file_get_contents($keyfile));
 
