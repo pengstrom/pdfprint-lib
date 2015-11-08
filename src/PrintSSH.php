@@ -2,10 +2,9 @@
 
 namespace PEngstrom\PdfPrintLib;
 
-require 'Net/SSH2.php';
-require 'Net/SFTP.php';
-require 'Crypt/RSA.php';
-
+use phpseclib\Net\Net_SSH2;
+use phpseclib\Net\SFTP\Net_SFTP;
+use phpseclib\Crypt\Crypt_RSA;
 /**
  * PrintSSH
  *
