@@ -50,3 +50,5 @@ class PdfUploadHandler extends Handler
         return finfo_file($file) === 'application/pdf';
     }
 }
+
+?>
