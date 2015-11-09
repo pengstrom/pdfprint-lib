@@ -50,10 +50,15 @@ class PrintSSH
 
         $key->loadKey(file_get_contents($keyfile));
 
-        if (!$ssh->login($username, $key) || !$ssh->login($username, $key)) {
-            exit('Access denied');
+        if (!$ssh->login($username, $key)) {
+            exit('Access ssh denied');
         }
 
+        if (!$sftp->login($username, $key)) {
+            exit('Access sftp denied');
+        }
+
+        $this->ssh = $ssh;
         $this->sftp = $sftp;
         $this->key = $key;
     }
