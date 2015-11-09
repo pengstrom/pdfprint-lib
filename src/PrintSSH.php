@@ -73,8 +73,12 @@ class PrintSSH
      * @return void
      */
     public function uploadFile($file) {
-        $this->sftp->put($file, $file, NET_SFTP_LOCAL_FILE);
-        $this->sftp->chmod(0644, $file);
+        $remoteFile = basename($file);
+
+        $localData = file_get_contents($file);
+
+        echo $this->sftp->put($remoteFile, $localData, NET_SFTP_LOCAL_FILE);
+        $this->sftp->chmod(0644, $remoteFile);
     }
 
     /**
@@ -87,12 +91,13 @@ class PrintSSH
      *
      * @return void
      */
-    public function printFile($file, $options) {
+    public function printFile($file, $options = null) {
 
         $this->uploadFile($file);
 
         $printCommand = 'lpr -p 2402';
-        $command = $printCommand . ' ' . $file;
+        $command = $printCommand . ' ' . basename($file);
+        d($command);
 
         //$this->ssh->exec($command);
     }
