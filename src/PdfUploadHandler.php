@@ -31,7 +31,7 @@ class PdfUploadHandler extends Handler
         });
 
         $this->addRule('extension',
-                       ['allowed' => ['pdf']],
+                       ['allowed' => 'pdf'],
                        '{label} should have the extension .pdf.',
                        'PDF file');
 
