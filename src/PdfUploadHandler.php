@@ -50,7 +50,10 @@ class PdfUploadHandler extends Handler
      * @return bool True of the check succeeds
      */
     public function ensurePdfMime($file) {
-        return finfo_file($file) === 'application/pdf';
+        d($file);
+        $result = finfo_file($file) === 'application/pdf';
+        d(finfo_file($file));
+        d(finfo::file($file));
     }
 }
 
