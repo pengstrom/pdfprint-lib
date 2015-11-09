@@ -29,11 +29,12 @@ class PdfUploadHandler extends Handler
         $this->setSanitizerCallback(function($name) {
             return md5(uniqid(rand(), true));
         });
-
+        /*
         $this->addRule('extension',
                        ['allowed' => 'pdf'],
                        '{label} should have the extension .pdf.',
                        'PDF file');
+         */
 
         $this->addRule('callback',
                        ['callback' => '$this->ensurePdfMime'],
