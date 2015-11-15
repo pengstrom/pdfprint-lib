@@ -2,7 +2,7 @@
     "name": "pengstrom/pdfprint-lib",
     "description": "Upload and print PDF files securely over ssh",
     "homepage": "https://github.com/pengstrom/pdfprint-lib",
-    "license": "GPL",
+    "license": "GPL-3.0",
     "keywords": ["pdf", "ssh", "print"],
     "type": "library",
     "authors": [
@@ -13,7 +13,6 @@
     ],
     "require": {
         "php": ">=5.3.0",
-        "siriusphp/upload": "2.0.*",
         "phpseclib/phpseclib": "2.0.*",
         "raveren/kint": "^1.0"
     },
