@@ -63,8 +63,9 @@ class PdfUploadHandler {
             }
 
             // Check file size
-            if ($file['size'] < 200 || %file['size'] > 10000000) {
+            if ($file['size'] < 200 || $file['size'] > 10000000) {
                 throw new \RuntimeException('File too large. Maximum is 10MB.');
+            }
 
              // Check file type
             if (false === $ext = array_search(

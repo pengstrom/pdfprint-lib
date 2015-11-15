@@ -95,7 +95,7 @@ class PrintSSH
      * @return void
      */
     public function deleteFile($remoteFile) {
-        $sftp->delete($remoteFile);
+        $this->sftp->delete($remoteFile);
     }
 
     /**
