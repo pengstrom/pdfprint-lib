@@ -2,59 +2,104 @@
 
 namespace PEngstrom\PdfPrintLib;
 
-use Sirius\Validation\ValueValidation;
-use Sirius\Upload\Handler;
-
 /**
  * Uploads and verifies pdf files
  */
-class PdfUploadHandler extends Handler
-{
+class PdfUploadHandler {
 
     /**
-     * Calls Sirius\Upload\Handler and adds extension and mime rules
-     *
-     * @param mixed          $directoryOrContainer Local path for uploads
-     * @param array          $options              Options
-     * @param ValueValidator $validator            Validator 
+     * Directory of local uploads
      */
-    public function __construct($directoryOrContainer,
-                                $options = array(),
-                                ValueValidator $validator = null) {
+    public $storage;
 
-        parent::__construct($directoryOrContainer,
-                            $options,
-                            $validator);
-
-        $this->setSanitizerCallback(function($name) {
-            return md5(uniqid(rand(), true));
-        });
-        /*
-        $this->addRule('extension',
-                       ['allowed' => 'pdf'],
-                       '{label} should have the extension .pdf.',
-                       'PDF file');
-         */
-
-        $this->addRule('callback',
-                       ['callback' => '$this->ensurePdfMime'],
-                       '{label} should be a valid PDF file.',
-                       'PDF file');
+    /**
+     * Constructor
+     *
+     * initiates $storage
+     */
+    public function __construct($storage) {
+        $this->storage = $storage;
     }
-     
+
     /**
-     * Ensure the mime type of the file is pdf
+     * Uploads file locally
      *
-     * @param string $file File to be checked
+     * Verifies the upload and mime properties. If OK it proceeds.
      *
-     * @return bool True of the check succeeds
+     * @param string $file element of $_FILES to upload
+     *
+     * @return Array Hashmap with 'message' for errors and 'filename' for uploaded file
      */
-    public function ensurePdfMime($file) {
-        d($file);
-        $result = finfo_file($file) === 'application/pdf';
-        d(finfo_file($file));
-        d(finfo::file($file));
+    public function upload($file) {
+        $storage = $this->storage;
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $message = '';
+        $filename = '';
+
+        // Check finfo instance
+        if (!$finfo) {
+            exit('Magic database could not be created!');
+        }
+
+        try {
+            // Check integrity of POST object
+            if( !isset($file['error']) || is_array($file['error']) ) {
+                throw new \RuntimeException('Invalid parameters!');
+            }
+
+            // Handle errors
+            switch ($file['error']) {
+            case UPLOAD_ERR_OK:
+                break;
+            case UPLOAD_ERR_NO_FILE:
+                throw new \RuntimeException('No file sent!');
+            case UPLOAD_ERR_INI_SIZE:
+            case UPLOAD_ERR_FORM_SIZE:
+                throw new \RuntimeException(
+                    'Exceeded filesize limit! Maximum is 10MB.'
+                );
+            default:
+                throw new \RuntimeException('Something happened.');
+            }
+
+            // Check file size
+            if ($file['size'] < 200 || %file['size'] > 10000000) {
+                throw new \RuntimeException('File too large. Maximum is 10MB.');
+
+             // Check file type
+            if (false === $ext = array_search(
+                $finfo->file($file['tmp_name']),
+                array(
+                    'pdf' => 'application/pdf',
+                ),
+                true
+            )) {
+                throw new \RuntimeException(
+                    'Invalid file format. Only PDF files allowed.'
+                );
+            }
+
+            // Try to move uploaded file
+            $filename = sprintf(
+                $storage . DIRECTORY_SEPARATOR . '%s.%s',
+                sha1_file($file['tmp_name']),
+                $ext
+            );
+            if (!move_uploaded_file(
+                $file['tmp_name'],
+                $filename
+            )) {
+                throw new \RuntimeException(
+                    'Failed to move uploaded file. Contact webmaster.'
+                );
+            }
+
+        } catch (\RuntimeException $e) {
+            $message = $e->getMessage();
+        }
+
+        return ['filename' => $filename, 'message' => $message];
+
     }
 }
 
-?>

@@ -5,6 +5,7 @@ namespace PEngstrom\PdfPrintLib;
 use phpseclib\Net\SSH2;
 use phpseclib\Net\SFTP;
 use phpseclib\Crypt\RSA;
+
 /**
  * PrintSSH
  *
@@ -43,12 +44,12 @@ class PrintSSH
     public function __construct($server,
                                 $username,
                                 $keyfile) {
-        
+
         $ssh = new SSH2($server);
         $sftp = new SFTP($server);
         $key = new RSA();
 
-        $key->loadKey(file_get_contents($keyfile));
+        $key->loadKey($keyfile);
 
         if (!$ssh->login($username, $key)) {
             exit('Access ssh denied');
@@ -61,6 +62,7 @@ class PrintSSH
         $this->ssh = $ssh;
         $this->sftp = $sftp;
         $this->key = $key;
+
     }
     
     /**
@@ -73,12 +75,27 @@ class PrintSSH
      * @return void
      */
     public function uploadFile($file) {
-        $remoteFile = basename($file);
+        $remoteFile = '.printer_uploads/' . basename($file);
 
         $localData = file_get_contents($file);
 
-        echo $this->sftp->put($remoteFile, $localData, NET_SFTP_LOCAL_FILE);
-        $this->sftp->chmod(0644, $remoteFile);
+        $this->sftp->put($remoteFile, $localData, NET_SFTP_LOCAL_FILE);
+        $this->sftp->chmod(0600, $remoteFile);
+
+        return $remoteFile;
+    }
+
+    /**
+     * Deletes remote file
+     *
+     * Deletes file on remote server
+     *
+     * @param string $remoteFile Filename on server
+     *
+     * @return void
+     */
+    public function deleteFile($remoteFile) {
+        $sftp->delete($remoteFile);
     }
 
     /**
@@ -93,13 +110,14 @@ class PrintSSH
      */
     public function printFile($file, $options = null) {
 
-        $this->uploadFile($file);
+        $remoteFile = $this->uploadFile($file);
 
         $printCommand = 'lpr -p 2402';
         $command = $printCommand . ' ' . basename($file);
-        d($command);
 
         //$this->ssh->exec($command);
+        
+        $this->deleteFile($remoteFile);
     }
 }
 
