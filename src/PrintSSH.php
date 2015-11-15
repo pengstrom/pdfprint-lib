@@ -112,8 +112,8 @@ class PrintSSH
 
         $remoteFile = $this->uploadFile($file);
 
-        $printCommand = 'lpr -p 2402';
-        $command = $printCommand . ' ' . basename($file);
+        $printCommand = 'lpr -P pr2402';
+        $command = $printCommand . ' ' . $remoteFile;
 
         //$this->ssh->exec($command);
         
