@@ -28,13 +28,6 @@ class PrintSSH
     protected $sftp;
 
     /**
-     * RSA private key
-     *
-     * @var Crypt_RSA
-     */
-    protected $key;
-
-    /**
      * Initiates the ssh and sftp clients
      *
      * @param string $server   Server adress e.g. 'www.example.com'
@@ -43,25 +36,21 @@ class PrintSSH
      */
     public function __construct($server,
                                 $username,
-                                $keyfile) {
+                                $password) {
 
         $ssh = new SSH2($server);
         $sftp = new SFTP($server);
-        $key = new RSA();
 
-        $key->loadKey($keyfile);
-
-        if (!$ssh->login($username, $key)) {
+        if (!$ssh->login($username, $password)) {
             exit('Access ssh denied');
         }
 
-        if (!$sftp->login($username, $key)) {
+        if (!$sftp->login($username, $password)) {
             exit('Access sftp denied');
         }
 
         $this->ssh = $ssh;
         $this->sftp = $sftp;
-        $this->key = $key;
 
     }
     
@@ -75,7 +64,7 @@ class PrintSSH
      * @return void
      */
     public function uploadFile($file) {
-        $remoteFile = '.printer_uploads/' . basename($file);
+        $remoteFile = basename($file);
 
         $localData = file_get_contents($file);
 
@@ -108,14 +97,16 @@ class PrintSSH
      *
      * @return void
      */
-    public function printFile($file, $options = null) {
+    public function printFile($file, $options = null, $live = false) {
 
         $remoteFile = $this->uploadFile($file);
 
         $printCommand = 'lpr -P pr2402';
         $command = $printCommand . ' ' . $remoteFile;
 
-        //$this->ssh->exec($command);
+        if ($live) {
+            $this->ssh->exec($command);
+        }
         
         $this->deleteFile($remoteFile);
     }
