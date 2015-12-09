@@ -97,16 +97,17 @@ class PrintSSH
      *
      * @return void
      */
-    public function printFile($file, $printerName, $options = null, $live = false) {
+    public function printFile($files, $printerName, $options = null, $copies = 1, $live = false) {
 
         $remoteFile = $this->uploadFile($file);
 
-        $printCommand = 'lpr -P ' . $printerName;
+        $printCommand = 'lpr -P ' . $printerName . ' -# ' . $copies;
 
         $optionString = '';
         foreach ($options as $optionsName => $value) {
             $optionString = $optionString . ' -o ' . $optionsName . '=' . $value;
         }
+
         $command = $printCommand . $optionString . ' ' . $remoteFile;
 
         if ($live) {
