@@ -33,7 +33,7 @@ class PdfUploadHandler {
     public function upload($file) {
 
         if (is_array($file['name'])) {
-            $files = reArrayFiles($file);
+            $files = $this->reArrayFiles($file);
 
             $results = [];
 
