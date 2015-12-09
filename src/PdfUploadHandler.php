@@ -15,7 +15,7 @@ class PdfUploadHandler {
     /**
      * Constructor
      *
-     * initiates $storage
+     * Initiates $storage
      */
     public function __construct($storage) {
         $this->storage = $storage;
@@ -24,13 +24,40 @@ class PdfUploadHandler {
     /**
      * Uploads file locally
      *
+     * If the files are an array, it is decomposed and
+     * files are uploaded individually.
+     *
+     * @param array $file Same structure as $_FILES['myUpload'].
+     *                    Can be both single and array.
+     */
+    public function upload($file) {
+
+        if (is_array($file['name'])) {
+            $files = reArrayFiles($file);
+
+            foreach ($files as $singleFile) {
+                $this->uploadSingle($singleFile);
+            }
+
+        } else {
+
+            $this->uploadSingle($file);
+
+        }
+    }
+
+
+    /**
+     * Uploads file locally
+     *
      * Verifies the upload and mime properties. If OK it proceeds.
      *
      * @param string $file element of $_FILES to upload
      *
-     * @return Array Hashmap with 'message' for errors and 'filename' for uploaded file
+     * @return Array Hashmap with 'message' for errors and
+     *               'filename' for uploaded file
      */
-    public function upload($file) {
+    public function uploadSingle($file) {
         $storage = $this->storage;
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
         $message = '';
@@ -43,7 +70,7 @@ class PdfUploadHandler {
 
         try {
             // Check integrity of POST object
-            if( !isset($file['error']) || is_array($file['error']) ) {
+            if (!isset($file['error']) || is_array($file['error']) ) {
                 throw new \RuntimeException('Invalid parameters!');
             }
 
@@ -101,6 +128,28 @@ class PdfUploadHandler {
 
         return ['filename' => $filename, 'message' => $message];
 
+    }
+
+    /**
+     * Decomposes $_FILES array into separate files
+     *
+     * @param array $file_post Same structure as $_FILES['myUpload']
+     *
+     * @return array $file_ary Deconstructed array file-wise
+     */
+    function reArrayFiles(&$file_post) {
+
+        $file_ary = array();
+        $file_count = count($file_post['name']);
+        $file_keys = array_keys($file_post);
+
+        for ($i=0; $i<$file_count; $i++) {
+            foreach ($file_keys as $key) {
+                $file_ary[$i][$key] = $file_post[$key][$i];
+            }
+        }
+
+        return $file_ary;
     }
 }
 
