@@ -35,13 +35,19 @@ class PdfUploadHandler {
         if (is_array($file['name'])) {
             $files = reArrayFiles($file);
 
+            $results = [];
+
             foreach ($files as $singleFile) {
-                $this->uploadSingle($singleFile);
+                $result = $this->uploadSingle($singleFile);
+
+                $results[] = $result;
             }
+
+            return $results;
 
         } else {
 
-            $this->uploadSingle($file);
+            return Array($this->uploadSingle($file));
 
         }
     }
@@ -113,6 +119,7 @@ class PdfUploadHandler {
                 sha1_file($file['tmp_name']),
                 $ext
             );
+            $original = strip_tags($file['name']);
             if (!move_uploaded_file(
                 $file['tmp_name'],
                 $filename
@@ -126,7 +133,7 @@ class PdfUploadHandler {
             $message = $e->getMessage();
         }
 
-        return ['filename' => $filename, 'message' => $message];
+        return ['original' => $original, 'filename' => $filename, 'message' => $message];
 
     }
 
