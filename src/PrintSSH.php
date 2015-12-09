@@ -97,7 +97,7 @@ class PrintSSH
      *
      * @return void
      */
-    public function printFile($files, $printerName, $options = null, $copies = 1, $live = false) {
+    public function printFile($file, $printerName, $options = null, $copies = 1, $live = false) {
 
         $remoteFile = $this->uploadFile($file);
 
