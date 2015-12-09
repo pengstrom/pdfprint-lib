@@ -68,6 +68,7 @@ class PdfUploadHandler {
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
         $message = '';
         $filename = '';
+        $original = strip_tags($file['name']);
 
         // Check finfo instance
         if (!$finfo) {
@@ -119,7 +120,6 @@ class PdfUploadHandler {
                 sha1_file($file['tmp_name']),
                 $ext
             );
-            $original = strip_tags($file['name']);
             if (!move_uploaded_file(
                 $file['tmp_name'],
                 $filename
