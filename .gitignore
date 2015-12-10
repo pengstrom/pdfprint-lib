@@ -6,3 +6,5 @@ vendor/
 composer.lock
 
 .phpcomplete_extended
+
+*.swp
