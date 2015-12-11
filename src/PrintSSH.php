@@ -69,7 +69,7 @@ class PrintSSH
         $localData = file_get_contents($file);
 
         $this->sftp->put($remoteFile, $localData, NET_SFTP_LOCAL_FILE);
-        $this->sftp->chmod(0600, $remoteFile);
+        //$this->sftp->chmod(0600, $remoteFile);
 
         return $remoteFile;
     }
