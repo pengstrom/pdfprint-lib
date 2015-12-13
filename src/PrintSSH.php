@@ -105,10 +105,11 @@ class PrintSSH
 
         $optionString = '';
         foreach ($options as $optionsName => $value) {
-            $optionString = $optionString . ' -o ' . $optionsName . '=' . $value;
+            $option = sprintf(' -o %s=%s', $optionsName, $value);
+            $optionString = $optionString . $option;
         }
 
-        $command = $printCommand . $optionString . ' ' . $remoteFile;
+        $command = sprintf('%s %s "%s"',$printCommand, $optionString, $remoteFile);
 
         if ($live) {
             $this->ssh->exec($command);
@@ -116,6 +117,7 @@ class PrintSSH
         
         $this->deleteFile($remoteFile);
     }
+
 }
 
 ?>
