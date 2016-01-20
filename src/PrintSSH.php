@@ -110,7 +110,6 @@ class PrintSSH
      * @return void
      */
     public function deleteFile($remoteFile) {
-        d($remoteFile);
         ssh2_sftp_unlink($this->sftp, $remoteFile);
     }
 
@@ -145,7 +144,6 @@ class PrintSSH
         }
 
         $command = sprintf('%s %s "%s"', $printCommand, $optionString, $remoteFile);
-        d($remoteFile);
 
         if ($live) {
             if(ssh2_exec($this->connection, $command) === false) {
