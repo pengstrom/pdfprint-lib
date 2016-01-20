@@ -2,9 +2,6 @@
 
 namespace PEngstrom\PdfPrintLib;
 
-use phpseclib\Net\SSH2;
-use phpseclib\Net\SFTP;
-use phpseclib\Crypt\RSA;
 
 /**
  * PrintSSH
@@ -14,65 +11,94 @@ use phpseclib\Crypt\RSA;
 class PrintSSH
 {
     /**
-     * SSH client
+     * SSH session
      *
-     * @var Net_SSH2
+     * @var resource
      */
-    protected $ssh;
+    protected $connection;
 
-    /*
-     * SFTP client
+    /**
+     * SFTP session
      *
-     * @var Net_SFTP
+     * @var resource
      */
     protected $sftp;
 
+
     /**
-     * Initiates the ssh and sftp clients
+     * Initiates the ssh session
      *
      * @param string $server   Server adress e.g. 'www.example.com'
-     * @param string $username User name
-     * @param string $keyfile  Location of private rsa key
+     * @param string $username SSH Username
+     * @param string $password SSH Password
      */
-    public function __construct($server,
-                                $username,
-                                $password) {
+    public function __construct($server, $username, $password) {
 
-        $ssh = new SSH2($server);
-        $sftp = new SFTP($server);
-
-        if (!$ssh->login($username, $password)) {
-            exit('Access ssh denied');
+        if (!function_exists('ssh2_connect')) {
+            throw new \RuntimeException("Function ssh2_connect not found");
         }
 
-        if (!$sftp->login($username, $password)) {
-            exit('Access sftp denied');
+        if (!$con = ssh2_connect($server)) {
+            throw new \RuntimeException("Could not connect to $server");
         }
 
-        $this->ssh = $ssh;
+        if (!ssh2_auth_password($con, $username, $password)) {
+            throw new \RuntimeException("Could not log in to $server with as $username");
+        }
+
+        if (!$sftp = ssh2_sftp($con)) {
+            throw new \RuntimeException("Could not initialize SFTP connection to $server");
+        }
+        
+        $this->connection = $con;
         $this->sftp = $sftp;
 
     }
     
+
     /**
      * Upload File
      *
-     * Uploads file with the SFTp client
+     * Uploads file with SCP
      *
-     * @param string $file File to be uploaded
+     * @param string $localFile File to be uploaded
      *
      * @return void
      */
-    public function uploadFile($file) {
-        $remoteFile = basename($file);
+    public function uploadFile($localFile) {
 
-        $localData = file_get_contents($file);
+        $sftp = $this->sftp;
 
-        $this->sftp->put($remoteFile, $localData, NET_SFTP_LOCAL_FILE);
-        //$this->sftp->chmod(0600, $remoteFile);
+        $localFile = realpath($localFile);
+
+        $localData = file_get_contents($localFile);
+
+        if ($localData === False) {
+            throw new \RuntimeException("Could not read local file $localFile");
+        }
+
+        $remoteHome = ssh2_sftp_realpath($sftp, '.');
+
+        if ($remoteHome === false) {
+            throw new \RuntimeException("Could not establish remote home directory");
+        }
+
+        $remoteFile = "$remoteHome/".basename($localFile);
+        $stream = fopen("ssh2.sftp://$sftp$remoteFile", 'w');
+
+        if (!$stream) {
+            throw new \RuntimeException("Could not open stream to $remoteFile");
+        }
+
+        if (fwrite($stream, $localData) === false) {
+            throw new \RuntimeException("Could not write to remote file $remoteFile");
+        }
+
+        fclose($stream);
 
         return $remoteFile;
     }
+
 
     /**
      * Deletes remote file
@@ -84,7 +110,8 @@ class PrintSSH
      * @return void
      */
     public function deleteFile($remoteFile) {
-        $this->sftp->delete($remoteFile);
+        d($remoteFile);
+        ssh2_sftp_unlink($this->sftp, $remoteFile);
     }
 
     /**
@@ -92,16 +119,24 @@ class PrintSSH
      *
      * Prints file on server with options
      *
-     * @param string $file    File on server
-     * @param array  $options List of printer options
+     * @param string $file        File on server
+     * @param string $printerName Name of printer
+     * @param array  $options     List of printer options
+     * @param int    $copies      Number of copies to print
+     * @param bool   $live        If false, will not print
      *
      * @return void
      */
-    public function printFile($file, $printerName, $options = null, $copies = 1, $live = false) {
+    public function printFile(
+        $localFile,
+        $printerName,
+        $options = [],
+        $copies = 1,
+        $live = false) {
 
-        $remoteFile = $this->uploadFile($file);
+        $remoteFile = $this->uploadFile($localFile);
 
-        $printCommand = 'lpr -P ' . $printerName . ' -# ' . $copies;
+        $printCommand = "lpr -P $printerName -# $copies";
 
         $optionString = '';
         foreach ($options as $optionsName => $value) {
@@ -109,11 +144,15 @@ class PrintSSH
             $optionString = $optionString . $option;
         }
 
-        $command = sprintf('%s %s "%s"',$printCommand, $optionString, $remoteFile);
+        $command = sprintf('%s %s "%s"', $printCommand, $optionString, $remoteFile);
+        d($remoteFile);
 
         if ($live) {
-            $this->ssh->exec($command);
+            if(ssh2_exec($this->connection, $command) === false) {
+                throw new \RuntimeException("Could not execute command $command");
+            }
         }
+
         
         $this->deleteFile($remoteFile);
     }
