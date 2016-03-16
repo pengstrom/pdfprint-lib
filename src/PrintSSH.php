@@ -43,7 +43,7 @@ class PrintSSH
         }
 
         if (!ssh2_auth_password($con, $username, $password)) {
-            throw new \RuntimeException("Could not log in to $server with as $username");
+            throw new \RuntimeException("Could not log in to $server as $username");
         }
 
         if (!$sftp = ssh2_sftp($con)) {
