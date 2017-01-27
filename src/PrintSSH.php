@@ -135,7 +135,7 @@ class PrintSSH
 
         $remoteFile = $this->uploadFile($localFile);
 
-        $printCommand = "lp -d $printerName -n $copies";
+        $printCommand = "lpr -P $printerName -# $copies";
 
         $optionString = '';
         foreach ($options as $optionsName => $value) {
